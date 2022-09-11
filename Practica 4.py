@@ -128,13 +128,10 @@ def create_boxplot_by_type(df: pd.DataFrame, column: str, agg_fn=pd.DataFrame.su
 dfNorm = normalize_data(dftest)
 
 #Análisis del precio con el DF normalizado
-#dfa = analysis_price(dfNorm)
-
-#Análisis en un gráfico precio minimo en cada zona 
-#lot_by_average_price_per_region(dfa)
+dfa = analysis_price(dfNorm)
 
 create_plot(dfNorm)
 
 #Grafica BoxPlot del precio según cada suburb
-#create_boxplot_by_type(dfNorm, "Suburb", pd.DataFrame.mean)
+create_boxplot_by_type(dfNorm, "Suburb", pd.DataFrame.mean)
 
