@@ -2,7 +2,7 @@
 """
 Created on Fri Sep  2 21:04:06 2022
 
-@author: chuch
+@author: Jesús Alexandro Hernández Rivera
 """
 
 import requests
