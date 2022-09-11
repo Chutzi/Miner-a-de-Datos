@@ -27,4 +27,4 @@ def get_csv_from_url(url:str) -> pd.DataFrame:
 
 url = "https://raw.githubusercontent.com/Chutzi/Datasets/main/melb_data.csv"
 df = get_csv_from_url(url)
-print("\nDATAFRAME\n",df)
+print("\nDATAFRAME:\n",df)
