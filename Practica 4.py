@@ -87,7 +87,9 @@ def analysis_price(df: pd.DataFrame)->pd.DataFrame:
     df_by_p = df_by_p.reset_index()
     print_tabulate(df_by_p.head())
     return df_by_p
-    
+
+#Visualización de los datos 
+
 def plot_by_average_price_per_region(df: pd.DataFrame)->None:
     plt.title("Average price of each Metropolitan Region")
     plt.xlabel("Metropolitan Region")
@@ -101,20 +103,20 @@ def create_plot(df: pd.DataFrame):
    df.set_index("Date", inplace=True)
    print_tabulate(df.head(5))
 
-   for dep in set(df["MetropolitanRegion"]):
-     plot_by_dep(df, dep)
+   for reg in set(df["MetropolitanRegion"]):
+     plot_by_dep(df, reg)
    df_aux = df.groupby(["Date","MetropolitanRegion"])[['Price']].mean().unstack()
    df_aux.plot(y = 'Price', legend=False, figsize=(32,18))
    plt.xticks(rotation=90)
    plt.savefig("img/foo.png")
    plt.close()
 
-def plot_by_dep(df: pd.DataFrame, dep:str)->None:
-    df[df["MetropolitanRegion"] == dep].plot(y =["Price"], figsize=(32,18))
-    plt.title(dep)
-    plt.savefig(f"img/lt_{dep}.png")
-    df[df["MetropolitanRegion"] == dep].boxplot(by ='Price', figsize=(32,18))
-    plt.savefig(f"img/bplt_{dep}.png")
+def plot_by_dep(df: pd.DataFrame, reg:str)->None:
+    df[df["MetropolitanRegion"] == reg].plot(y =["Price"], figsize=(32,18))
+    plt.title(reg)
+    plt.savefig(f"img/lt_{reg}.png")
+    df[df["MetropolitanRegion"] == reg].boxplot(by ='Price', figsize=(32,18))
+    plt.savefig(f"img/bplt_{reg}.png")
     
 def create_boxplot_by_type(df: pd.DataFrame, column: str, agg_fn=pd.DataFrame.sum):
     df_by_type = df.groupby([column,"Date"])[["Price"]].aggregate(agg_fn)#.count()
@@ -123,6 +125,17 @@ def create_boxplot_by_type(df: pd.DataFrame, column: str, agg_fn=pd.DataFrame.su
     plt.savefig(f"img/boxplot_{column}.png")
     plt.close()
     
+def boxplot_by(df, column: str, agg_fn = pd.DataFrame.mean):
+    df_review = df.groupby(column).aggregate(agg_fn)["Propertycount"]
+    plt.boxplot(df_review)
+
+def boxplot_por_tipo(dataframe,column: str, agg_fn = pd.DataFrame.sum):
+    df = dataframe
+    df_by_type = df.groupby([column,"Date"]).aggregate(agg_fn)
+    print(df_by_type)#eliminar columnas que no quiero xd
+    df_by_type.boxplot(by = column, figsize=(30,19))
+    plt.savefig(f"img/boxplots_{column}.png")
+    plt.close()
 
 #DataFrame normalizado
 dfNorm = normalize_data(dftest)
@@ -130,8 +143,16 @@ dfNorm = normalize_data(dftest)
 #Análisis del precio con el DF normalizado
 dfa = analysis_price(dfNorm)
 
-create_plot(dfNorm)
+#create_plot(dfNorm)
 
 #Grafica BoxPlot del precio según cada suburb
-create_boxplot_by_type(dfNorm, "Suburb", pd.DataFrame.mean)
+#create_boxplot_by_type(dfNorm, "Suburb", pd.DataFrame.mean)
 
+#Boxplot por columnas
+boxplot_by(dfNorm, "MetropolitanRegion")
+boxplot_by(dfNorm, "Suburb")
+
+df_by_type = dfNorm.groupby(["MetropolitanRegion","Date"]).sum()
+boxplot_por_tipo(dfNorm,"MetropolitanRegion")
+
+#dfNorm.groupby("MetropolitanRegion").sum().boxplot(figsize=(15,6))

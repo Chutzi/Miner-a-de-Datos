@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 """
-Created on Sat Sep 10 11:34:44 2022
+Created on Fri Sep 16 15:56:08 2022
 
-@author: Jesús Alexandro Hernández Rivera
+@author: Jesus Alexandro Hernández Rivera 
 """
 
 import requests
@@ -15,8 +15,8 @@ import re
 from datetime import datetime
 import numpy as np
 import matplotlib.pyplot as plt
-import numbers
 import statsmodels.api as sm
+from statsmodels.formula.api import ols
 
 #Data Importing
 
@@ -54,7 +54,7 @@ def print_tabulate(df: pd.DataFrame):
     print(tabulate(df, headers=df.columns, tablefmt='orgtbl'))
 
 #Cambiar el nombre de la columna que usaremos
-df = df.rename(columns={'Regionname': 'MetropolitanRegion'})
+dftest = df.rename(columns={'Regionname': 'MetropolitanRegion'})
 
 #Categorización de la región metropolitana a la que pertenece
 def categorize(name:str)->str:
@@ -80,35 +80,76 @@ def normalize_data(df: pd.DataFrame)->pd.DataFrame:
     df_complete = transform_into_typed_df(df)
     df_complete.to_csv("typed_melb_clean_data.csv", index=False)
     return df_complete
+    
+def plot_by_average_price_per_region(df: pd.DataFrame)->None:
+    plt.title("Average price of each Metropolitan Region")
+    plt.xlabel("Metropolitan Region")
+    plt.ylabel("Price")
+    plt.plot(df["MetropolitanRegion"], df["Price","mean"].sort_values())
+    plt.savefig(f"img/average_price_per_region.png")
+    plt.show()
+  
+def create_plot(df: pd.DataFrame):
+   df.reset_index(inplace=True)
+   df.set_index("Date", inplace=True)
+   print_tabulate(df.head(5))
+
+   for dep in set(df["MetropolitanRegion"]):
+     plot_by_dep(df, dep)
+   df_aux = df.groupby(["Date","MetropolitanRegion"])[['Price']].mean().unstack()
+   df_aux.plot(y = 'Price', legend=False, figsize=(32,18))
+   plt.xticks(rotation=90)
+   plt.savefig("img/foo.png")
+   plt.close()
+
+def plot_by_dep(df: pd.DataFrame, dep:str)->None:
+    df[df["MetropolitanRegion"] == dep].plot(y =["Price"], figsize=(32,18))
+    plt.title(dep)
+    plt.savefig(f"img/lt_{dep}.png")
+    df[df["MetropolitanRegion"] == dep].boxplot(by ='Price', figsize=(32,18))
+    plt.savefig(f"img/bplt_{dep}.png")
+    
+def create_boxplot_by_type(df: pd.DataFrame, column: str, agg_fn=pd.DataFrame.sum):
+    df_by_type = df.groupby([column,"Date"])[["Price"]].aggregate(agg_fn)#.count()
+    df_by_type.boxplot(by = column, figsize=(54,36))
+    plt.xticks(rotation=90)
+    plt.savefig(f"img/boxplot_{column}.png")
+    plt.close()
+    
+def anova(df_aux: pd.DataFrame, str_ols: str):
+    # shaphiro-wills
+    # Levenes or barletts
+    modl = ols(str_ols, data=df_aux).fit()
+    anova_df = sm.stats.anova_lm(modl, typ=2)
+    if anova_df["PR(>F)"][0] < 0.005:
+        print("hay diferencias")
+        print(anova_df)
+        # Prueba tukey
+        # imprimir los resultados
+    else:
+        print("No hay diferencias")
+
+def anova_1(df_complete: pd.DataFrame):
+    df_by_type = df_complete.groupby(["Suburb", "Date"])[["Price"]].aggregate(pd.DataFrame.sum)
+    df_by_type.reset_index(inplace=True)
+    df_by_type.set_index("Date", inplace=True)
+    df_by_type.reset_index(inplace=True)
+    df_aux = df_by_type.rename(columns={"Price": "Gasto"}).drop(['Date'], axis=1)
+    print(df_aux.head())
+    anova(df_aux, "Gasto ~ Suburb")
+    
 
 #DataFrame normalizado
-dfNorm = normalize_data(df)
+dfNorm = normalize_data(dftest)
 
-#Practica 5 - Linear Regression
+#Análisis del precio con el DF normalizado
+#dfa = analysis_price(dfNorm)
 
-def transform_variable(df: pd.DataFrame, x:str)->pd.Series:
-    if isinstance(df[x][0], numbers.Number):
-        return df[x] # type: pd.Series
-    else:
-        return pd.Series([i for i in range(0, len(df[x]))])
+#create_plot(dfNorm)
 
-def linear_regression(df: pd.DataFrame, x:str, y: str)->None:
-    fixed_x = transform_variable(df, x)
-    model = sm.OLS(df[y],sm.add_constant(fixed_x)).fit()
-    print(model.summary())
+#Grafica BoxPlot del precio según cada suburb
+#create_boxplot_by_type(dfNorm, "Suburb", pd.DataFrame.mean)
 
-    coef = pd.read_html(model.summary().tables[1].as_html(),header=0,index_col=0)[0]['coef']
-    df.plot(x=x,y=y, kind='scatter')
-    plt.plot(df[x],[pd.DataFrame.mean(df[y]) for _ in fixed_x.items()], color='green')
-    plt.plot(df_by_price[x],[ coef.values[1] * x + coef.values[0] for _, x in fixed_x.items()], color='red')
-    plt.xticks(rotation=90)
-    plt.savefig(f'img/lr_{y}_{x}.png')
-    plt.close()
+#ANOVA
+anova_1(dfNorm)
 
-#print_tabulate(dfNorm.head(50))
-df_by_price = dfNorm.groupby("Date")\
-              .aggregate(Price=pd.NamedAgg(column="Price", aggfunc=pd.DataFrame.mean))
-# df_by_price["Price"] = df_by_price["Price"]**10
-df_by_price.reset_index(inplace=True)
-print_tabulate(df_by_price.head())
-linear_regression(df_by_price, "Date", "Price")
