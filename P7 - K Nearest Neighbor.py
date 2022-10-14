@@ -2,7 +2,7 @@
 """
 Created on Thu Oct  6 08:43:31 2022
 
-@author: Usuario
+@author: Jesús Alexandro Hernández Rivera
 """
 
 import requests
@@ -73,4 +73,4 @@ groups = [(1825, 10000, "grupo1"), (1900, 31000, "grupo2"), (1975, 3.3e+06, "gru
 df = generate_df(groups, 100)
 filtro = df['x'] < 400000
 df = df[filtro]
-scatter_group_by("groups.png", df, "x", "y", "label")
+scatter_group_by("img/groups.png", df, "x", "y", "label")
