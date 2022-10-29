@@ -1,10 +1,17 @@
 # -*- coding: utf-8 -*-
 """
-Created on Thu Oct  6 08:43:31 2022
+Created on Tue Oct 18 17:02:26 2022
 
-@author: Jesús Alexandro Hernández Rivera
+@author: chuch
 """
 
+
+# agglomerative clustering
+from numpy import unique
+from numpy import where
+from sklearn.datasets import make_classification
+from sklearn.cluster import AgglomerativeClustering
+from matplotlib import pyplot
 import requests
 import io
 from bs4 import BeautifulSoup
@@ -17,6 +24,9 @@ import numpy as np
 import numbers
 import matplotlib.pyplot as plt
 from scipy.stats import mode
+from sklearn.svm import SVC
+from copy import deepcopy
+from sklearn.cluster import KMeans
 
 #Data Importing
 
@@ -34,7 +44,7 @@ def print_tabulate(df: pd.DataFrame):
 
 #Datos normalizados y limpios
 url = "https://raw.githubusercontent.com/Chutzi/Mineria-de-Datos/master/typed_melb_clean_data.csv"
-dfNorma =get_csv_from_url(url)
+dfNorma = get_csv_from_url(url)
 print_tabulate(dfNorma.head())
 
 def generate_df(means: List[Tuple[float, float, str]], n: int) -> pd.DataFrame:
@@ -56,29 +66,19 @@ def get_cmap(n, name="hsv"):
     RGB color; the keyword argument name must be a standard mpl colormap name."""
     return plt.cm.get_cmap(name, n)
 
-def scatter_group_by(
-    file_path: str, df: pd.DataFrame, x_column: str, y_column: str, label_column: str
-):
-    fig, ax = plt.subplots(figsize=(17,6))
-    labels = pd.unique(df[label_column])
-    cmap = get_cmap(len(labels) + 1)
-    for i, label in enumerate(labels):
-        filter_df = df.query(f"{label_column} == '{label}'")
-        ax.scatter(filter_df[x_column], filter_df[y_column], label=label, color=cmap(i))
-    ax.legend()
-    #plt.plot(figsize=(4,4))
-    plt.savefig(file_path)
-    plt.close()
 
-#KNeighborsClassifier
-
-from sklearn.neighbors import KNeighborsClassifier
-neigh = KNeighborsClassifier(n_neighbors=3)
-#neigh.fit(df["x"], df["y"])
 
 groups = [(1825, 10000, "grupo1"), (1900, 31000, "grupo2"), (1975, 3.3e+06, "grupo3")]
 df = generate_df(groups, 100)
-filtro = df['x'] < 400000
-df = df[filtro]
-scatter_group_by("img/groups_by_room_type.png", df, "x", "y", "label")
 
+dfC = pd.DataFrame(df, columns=['x', 'y'])
+
+kmeans = KMeans(n_clusters=3).fit(dfC)
+centroids = kmeans.cluster_centers_
+print(centroids)
+
+plt.scatter(df['x'], df['y'], c=kmeans.labels_.astype(float), s=50, alpha=0.5)
+plt.scatter(centroids[:, 0], centroids[:, 1], c='red', s=50)
+plt.show()
+plt.savefig("img/Clustering_groups_by_room_type.png")
+plt.close()
