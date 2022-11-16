@@ -49,7 +49,7 @@ print_tabulate(dfNorma.head())
 
 def generate_df(means: List[Tuple[float, float, str]], n: int) -> pd.DataFrame:
     lists = [
-        (dfNorma["Landsize"], dfNorma["Price"], dfNorma["Type"])
+        (dfNorma["Lattitude"], dfNorma["Longtitude"], dfNorma["Type"])
         for _x, _y, _l in means
     ]
     x = np.array([])
@@ -73,12 +73,16 @@ df = generate_df(groups, 100)
 
 dfC = pd.DataFrame(df, columns=['x', 'y'])
 
-kmeans = KMeans(n_clusters=3).fit(dfC)
+kmeans = KMeans(n_clusters=5).fit(dfC)
 centroids = kmeans.cluster_centers_
 print(centroids)
+k=5;
 
 plt.scatter(df['x'], df['y'], c=kmeans.labels_.astype(float), s=50, alpha=0.5)
 plt.scatter(centroids[:, 0], centroids[:, 1], c='red', s=50)
+plt.title('Latitude v/s Longitude')
+plt.xlabel('Latitude')
+plt.ylabel('Longitude')
 plt.show()
-plt.savefig("img/Clustering_groups_by_room_type.png")
+plt.savefig(f'Clustering/cluster_{k}_Latitude_Longitude.png')
 plt.close()
