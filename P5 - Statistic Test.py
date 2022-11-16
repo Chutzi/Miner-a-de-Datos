@@ -130,13 +130,13 @@ def anova(df_aux: pd.DataFrame, str_ols: str):
         print("No hay diferencias")
 
 def anova_1(df_complete: pd.DataFrame):
-    df_by_type = df_complete.groupby(["Suburb", "Date"])[["Price"]].aggregate(pd.DataFrame.sum)
+    df_by_type = df_complete.groupby(["MetropolitanRegion", "Date"])[["Price"]].aggregate(pd.DataFrame.sum)
     df_by_type.reset_index(inplace=True)
     df_by_type.set_index("Date", inplace=True)
     df_by_type.reset_index(inplace=True)
     df_aux = df_by_type.rename(columns={"Price": "Gasto"}).drop(['Date'], axis=1)
     print(df_aux.head())
-    anova(df_aux, "Gasto ~ Suburb")
+    anova(df_aux, "Gasto ~ MetropolitanRegion")
     
 
 #DataFrame normalizado

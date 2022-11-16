@@ -17,6 +17,10 @@ import numpy as np
 import matplotlib.pyplot as plt
 import numbers
 import statsmodels.api as sm
+import plotly.express as px
+import plotly.io as io
+io.renderers.default='browser'
+
 
 #Data Importing
 
@@ -62,6 +66,12 @@ def linear_regression(df: pd.DataFrame, x:str, y: str)->None:
     plt.savefig(f'img/lr_{y}_{x}.png')
     plt.close()
 
+def lr_Price_Distance(df: pd.DataFrame, X: str):
+    fig = px.scatter(df, x=X, y="Price", trendline="ols", trendline_scope="overall",
+                     trendline_color_override="red")
+    fig.show()
+    fig.write_image("Regresion lineal/lr_Price-Distance.png")
+
 #DataFrame normalizado
 dfNorm = get_csv_from_url(df)
 
@@ -74,3 +84,4 @@ df_by_price["Price"] = df_by_price["Price"]**10
 df_by_price.reset_index(inplace=True)
 print_tabulate(df_by_price.head())
 linear_regression(df_by_price, "Date", "Price")
+lr_Price_Distance(dfNorm, "Date")

@@ -11,12 +11,8 @@ from bs4 import BeautifulSoup
 import pandas as pd
 from tabulate import tabulate
 from typing import Tuple, List
-import re
-from datetime import datetime
 import numpy as np
-import numbers
 import matplotlib.pyplot as plt
-from scipy.stats import mode
 
 #Data Importing
 
@@ -39,7 +35,7 @@ print_tabulate(dfNorma.head())
 
 def generate_df(means: List[Tuple[float, float, str]], n: int) -> pd.DataFrame:
     lists = [
-        (dfNorma["Landsize"], dfNorma["Price"], dfNorma["Type"])
+        (dfNorma["Lattitude"], dfNorma["Longtitude"], dfNorma["Type"])
         for _x, _y, _l in means
     ]
     x = np.array([])
@@ -59,7 +55,7 @@ def get_cmap(n, name="hsv"):
 def scatter_group_by(
     file_path: str, df: pd.DataFrame, x_column: str, y_column: str, label_column: str
 ):
-    fig, ax = plt.subplots(figsize=(17,6))
+    fig, ax = plt.subplots(figsize=(10,6))
     labels = pd.unique(df[label_column])
     cmap = get_cmap(len(labels) + 1)
     for i, label in enumerate(labels):
@@ -67,6 +63,9 @@ def scatter_group_by(
         ax.scatter(filter_df[x_column], filter_df[y_column], label=label, color=cmap(i))
     ax.legend()
     #plt.plot(figsize=(4,4))
+    plt.title('Latitude v/s Longitude')
+    plt.xlabel('Latitude')
+    plt.ylabel('Longitude')
     plt.savefig(file_path)
     plt.close()
 
@@ -80,5 +79,5 @@ groups = [(1825, 10000, "grupo1"), (1900, 31000, "grupo2"), (1975, 3.3e+06, "gru
 df = generate_df(groups, 100)
 filtro = df['x'] < 400000
 df = df[filtro]
-scatter_group_by("img/groups_by_room_type.png", df, "x", "y", "label")
+scatter_group_by("K Nearest Neighbors/groups_by_room_type.png", df, "x", "y", "label")
 

@@ -14,7 +14,11 @@ from typing import Tuple, List
 import re
 from datetime import datetime
 import numpy as np
+import seaborn as sns
 import matplotlib.pyplot as plt
+import plotly.express as px
+import plotly.io as io
+io.renderers.default='browser'
 
 #Data Importing
 
@@ -137,6 +141,57 @@ def boxplot_por_tipo(dataframe,column: str, agg_fn = pd.DataFrame.sum):
     plt.savefig(f"img/boxplots_{column}.png")
     plt.close()
 
+def distribution(df: pd.DataFrame, var: str):
+    fig = px.histogram(df, x=var)
+    fig.show()
+    fig.write_image("Visualizar_Info/Distribution by suburb.png")
+
+def distribution_regioname(df: pd.DataFrame):
+    fig = px.histogram(df, color="Type", x='MetropolitanRegion')
+    fig.show()
+    fig.write_image("Visualizar_Info/Distribution by Regioname.png")
+
+def analysis_boxplot(df: pd.DataFrame):
+    fig = px.box(df, y="Price",x='Type')
+    fig.show()
+    fig.write_image("Visualizar_Info/Boxplot House type and price.png")
+
+def analysis_boxplot_by_year(df: pd.DataFrame):
+    fig = px.box(df, y="Price",x='Type',color='Year')
+    fig.show()
+    fig.write_image("Visualizar_Info/Boxplot years.png")
+
+def salesPrice_suburb(df: pd.DataFrame):
+    a=df.groupby(['Suburb','Lattitude','Longtitude'],as_index=False)['Price'].median()
+    fig = px.scatter_mapbox(a,
+                            lat="Lattitude",
+                            lon="Longtitude",
+                            color='Price',
+                            mapbox_style='open-street-map',
+                            hover_name='Suburb',
+                            size='Price',
+                            center={'lat': -37.8136, 'lon': 144.9631},
+                            zoom=13,
+                            hover_data=['Suburb','Price'],
+                            title= 'SalesPrice In Each Suburb')
+    fig.update_geos(fitbounds="locations", visible=True)
+    fig.update_geos(projection_type="orthographic")
+    fig.update_layout(template='plotly_dark',margin=dict(l=20,r=20,t=40,b=20))
+    fig.show()
+    fig.write_image("Visualizar_Info/Sales price in each suburb.png")
+
+def analysis_boxplot_rooms_price(df: pd.DataFrame):
+    sns.boxplot(x='Rooms',y='Price',data=df)
+    plt.savefig("Visualizar_Info/Boxplot rooms-price.png")
+    
+def analysis_boxplot_method_price(df: pd.DataFrame):
+    sns.boxplot(x='Method',y='Price',data=df)
+    plt.savefig("Visualizar_Info/Boxplot Method-price.png")
+    
+def analysis_boxplot_region_price(df: pd.DataFrame):
+    sns.boxplot(x='MetropolitanRegion',y='Price',data=df)
+    plt.savefig("Visualizar_Info/Boxplot region-price.png")
+    
 #DataFrame normalizado
 dfNorm = normalize_data(dftest)
 
@@ -156,3 +211,13 @@ df_by_type = dfNorm.groupby(["MetropolitanRegion","Date"]).sum()
 boxplot_por_tipo(dfNorm,"MetropolitanRegion")
 
 #dfNorm.groupby("MetropolitanRegion").sum().boxplot(figsize=(15,6))
+
+#distribution(dfNorm, "Suburb")
+#distribution_regioname(dfNorm)
+#analysis_boxplot(dfNorm)
+#analysis_boxplot_by_year(dfNorm)
+#salesPrice_suburb(dfNorm)
+#analysis_boxplot_rooms_price(dfNorm)
+#analysis_boxplot_method_price(dfNorm)
+analysis_boxplot_region_price(dfNorm)
+
